@@ -1,0 +1,6 @@
+flask
+pandas
+soundfile
+librosa
+google-generativeai
+python-dotenv
