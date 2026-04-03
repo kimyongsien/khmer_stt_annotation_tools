@@ -353,3 +353,17 @@ a.page-item {
     align-items: stretch;
   }
 }
+
+.two-col {
+  grid-column: span 2; 
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 1080px) {
+  .two-col {
+    grid-column: span 1;
+    grid-template-columns: 1fr;
+  }
+}

@@ -17,38 +17,53 @@
     </header>
 
     <section class="card">
-      <h2>Add New Audio File</h2>
-      <form id="process-form" method="post" action="{{ url_for('process_route') }}" enctype="multipart/form-data" class="grid-form">
-        <input type="hidden" name="page" value="{{ page }}" />
+    <h2>Add New Audio File</h2>
 
-        <label class="field">
-          <span>Audio File</span>
-          <input type="file" name="audio_file" accept="audio/*" required />
-        </label>
+    <!-- PROCESS FORM -->
+    <form id="process-form" method="post" action="{{ url_for('process_route') }}" enctype="multipart/form-data" class="grid-form">
+      <input type="hidden" name="page" value="{{ page }}" />
 
+      <!-- Audio -->
+      <label class="field">
+        <span>Audio File</span>
+        <input type="file" name="audio_file" accept="audio/*" required />
+      </label>
+
+      <!-- Topic + Subtopic (SIDE BY SIDE) -->
+      <div class="two-col">
         <label class="field">
-  <span>Topic</span>
-        <input type="text" name="topic" placeholder="Recording name or source" value="{{ topic }}" />
+          <span>Topic</span>
+          <input type="text" name="topic" placeholder="Recording name or source" value="{{ topic }}" />
         </label>
 
         <label class="field">
           <span>Subtopic</span>
-        <input type="text" name="subtopic" placeholder="Example: a100" value="{{ subtopic }}" />
+          <input type="text" name="subtopic" placeholder="Example: a100" value="{{ subtopic }}" />
         </label>
+      </div>
+    </form>
+
+    <!-- ACTION BUTTONS (OUTSIDE FORM) -->
+    <div class="actions row-actions">
+      <button id="process-btn" class="btn btn-blue" type="submit" form="process-form">
+        Process Audio
+      </button>
+
+      <!-- EXPORT (SEPARATE FORM) -->
+      <form method="post" action="{{ url_for('export_route') }}">
+        <button class="btn btn-dark" type="submit">
+          Export Dataset ZIP
+        </button>
       </form>
 
-      <div class="actions row-actions">
-        <button id="process-btn" class="btn btn-blue" type="submit" form="process-form">Process Audio</button>
-
-        <form method="post" action="{{ url_for('export_route') }}">
-          <button class="btn btn-dark" type="submit">Export Dataset ZIP</button>
-        </form>
-
-        <form id="clear-history-form" method="post" action="{{ url_for('clear_history_route') }}">
-          <button id="clear-history-open" class="btn btn-outline" type="button">Clear History</button>
-        </form>
-      </div>
-    </section>
+      <!-- CLEAR -->
+      <form id="clear-history-form" method="post" action="{{ url_for('clear_history_route') }}">
+        <button id="clear-history-open" class="btn btn-outline" type="button">
+          Clear History
+        </button>
+      </form>
+    </div>
+  </section>
 
     <section class="card">
       <h2>Full Original Audio</h2>

@@ -41,31 +41,27 @@ Getting Started
 Follow these steps to run the project locally.
 
 1. Clone the Repository
-git clone https://github.com/kimyongsien/khmer_stt_annotation_toolss
-cd your-repo-name
+git clone https://github.com/kimyongsien/khmer_stt_annotation_tools
 
 2. Create Virtual Environment
 Windows
 python -m venv .venv
 .venv\Scripts\activate
+
 macOS / Linux
-python3 -m venv .venv
+python -m venv .venv
 source .venv/bin/activate
 
 
 3. Install Dependencies
 pip install -r requirements.txt
 
-If requirements.txt is missing, install manually:
-
-pip install flask pandas soundfile librosa google-generativeai python-dotenv
-
-
 4. Setup Environment Variable (IMPORTANT)
 
-Create a file named .env in the root directory:
+go to file named .env in the root directory:
+GEMINI_API_KEY=your_api_key_here 
 
-GEMINI_API_KEY=your_api_key_here
+(Using Gemini API From https://aistudio.google.com/)
 
 5. Run the Application
 python app.py

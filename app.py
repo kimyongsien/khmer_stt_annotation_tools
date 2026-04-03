@@ -1,11 +1,11 @@
 import os
 import re
 import json
-import time
 import zipfile
 import shutil
 from datetime import datetime
 from pathlib import Path
+
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, redirect, url_for, send_file, jsonify
 import pandas as pd
@@ -13,8 +13,12 @@ import soundfile as sf
 import librosa
 import google.generativeai as genai
 
+# Load environment variables from .env file
 load_dotenv()
 
+# =========================================================
+# CONFIG
+# =========================================================
 
 BASE_DIR = Path.cwd() / "khmer_stt_data"
 RAW_DIR = BASE_DIR / "raw_audio"
@@ -47,7 +51,9 @@ app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 200 * 1024 * 1024
 
 
-
+# =========================================================
+# FOLDER HELPERS
+# =========================================================
 
 def ensure_base_dirs():
     for d in [RAW_DIR, PROCESSED_DIR, PREVIEW_DIR, CHUNKS_DIR, CSV_DIR, EXPORT_DIR, STATE_DIR]:
@@ -67,6 +73,9 @@ else:
     MODEL = None
 
 
+# =========================================================
+# HELPERS
+# =========================================================
 
 def sanitize_name(name: str) -> str:
     stem = Path(name).stem
@@ -330,32 +339,13 @@ Rules:
 - Keep segments review-friendly, strictly under 15 seconds
 """
 
-    retries = 3
-    delay = 2
-    last_exception = None
+    response = MODEL.generate_content([
+        {"mime_type": "audio/wav", "data": audio_bytes},
+        prompt,
+    ])
 
-    for attempt in range(1, retries + 1):
-        try:
-            response = MODEL.generate_content([
-                {"mime_type": "audio/wav", "data": audio_bytes},
-                prompt,
-            ])
-
-            raw_text = response.text if hasattr(response, "text") and response.text else str(response)
-            result = extract_json_block(raw_text)
-            return result
-
-        except Exception as exc:
-            last_exception = exc
-            print(f"Gemini transcribe attempt {attempt}/{retries} failed: {exc}")
-            if attempt < retries:
-                time.sleep(delay)
-                delay *= 2
-
-    raise RuntimeError(
-        f"Gemini transcription failed after {retries} attempts. "
-        f"Last error: {last_exception}"
-    ) from last_exception
+    raw_text = response.text if hasattr(response, "text") and response.text else str(response)
+    return extract_json_block(raw_text)
 
 
 def validate_segments(payload: dict, audio_duration: float) -> list[dict]:
@@ -425,11 +415,7 @@ def process_audio(upload_path: str, original_name: str, topic: str, subtopic: st
     info = sf.info(str(clean_path))
     audio_duration = info.frames / info.samplerate
 
-    try:
-        gemini_payload = gemini_transcribe(clean_path)
-    except Exception as exc:
-        return [], str(raw_path), f"Error: Gemini transcription failed: {exc}"
-
+    gemini_payload = gemini_transcribe(clean_path)
     segments = validate_segments(gemini_payload, audio_duration)
 
     if not segments:
@@ -570,6 +556,11 @@ def safe_media_path(path_str: str) -> Path | None:
         return rp
     return None
 
+
+# =========================================================
+# ROUTES
+# =========================================================
+
 @app.get("/")
 def index():
     page = request.args.get("page", default=1, type=int)
@@ -679,10 +670,6 @@ def process_ajax_route():
             "subtopic": subtopic,
         }
         save_state(state)
-
-        if isinstance(status, str) and status.lower().startswith("error"):
-            return jsonify({"ok": False, "message": status}), 400
-
         return jsonify({"ok": True, "message": status})
     except Exception as e:
         msg = f"Error: {e}"
